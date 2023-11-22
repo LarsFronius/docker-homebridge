@@ -9,7 +9,8 @@ LABEL org.opencontainers.image.licenses="GPL-3.0"
 # update to latest releases prior to release
 
 ENV HOMEBRIDGE_PKG_VERSION=1.1.3 \
-  FFMPEG_VERSION=v2.1.1
+  FFMPEG_VERSION=v2.1.1 \
+  NODE_MAJOR=20
 
 ENV S6_OVERLAY_VERSION=3.1.1.2 \
  S6_CMD_WAIT_FOR_SERVICES_MAXTIME=0 \
@@ -24,13 +25,16 @@ ENV S6_OVERLAY_VERSION=3.1.1.2 \
 
 RUN set -x \
   && apt-get update \
-  && apt-get install -y curl wget tzdata locales psmisc procps iputils-ping logrotate \
+  && apt-get install -y gnupg curl wget tzdata locales psmisc procps iputils-ping logrotate \
     libatomic1 apt-transport-https apt-utils jq openssl sudo nano net-tools \
   && locale-gen en_US.UTF-8 \
   && ln -snf /usr/share/zoneinfo/Etc/GMT /etc/localtime && echo Etc/GMT > /etc/timezone \
   && apt-get install -y python3 python3-pip python3-setuptools git make g++ libnss-mdns \
     avahi-discover libavahi-compat-libdnssd-dev \
   && pip3 install tzupdate \
+  && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+  && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list \
+  && apt-get update && apt-get install -y nodejs \
   && chmod 4755 /bin/ping \
   && apt-get clean \
   && rm -rf /tmp/* /var/lib/apt/lists/* /var/tmp/* \
